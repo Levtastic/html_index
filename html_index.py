@@ -2,372 +2,318 @@
 # http://code.google.com/p/kosciak-misc/wiki/DropboxIndex
 
 import os, time, ctypes, argparse
+from string import Template
 
-DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+class HtmlIndex:
+    format_date = lambda self, date: time.strftime('%Y-%m-%d %H:%M:%S', date)
 
-FILE_TYPES = {
-    ('gif', 'jpg', 'jpeg', 'png', 'bmp', 'tif', 'tiff', 'raw', 'img', 'ico', ): 'image',
-    ('avi', 'ram', 'mpg', 'mpeg', 'mov', 'asf', 'wmv', 'asx', 'ogm', 'vob', '3gp', ): 'video',
-    ('mp3', 'ogg', 'mpc', 'wav', 'wave', 'flac', 'shn', 'ape', 'mid', 'midi', 'wma', 'rm', 'aac', 'mka', ): 'music',
-    ('tar', 'bz2', 'gz', 'arj', 'rar', 'zip', '7z', ): 'archive',
-    ('deb', 'rpm', 'pkg', 'jar', 'war', 'ear', ): 'package', 
-    ('pdf', ): 'pdf',
-    ('txt', ): 'txt',
-    ('html', 'htm', 'xml', 'css', 'rss', 'yaml', 'php', 'php3', 'php4', 'php5', ): 'markup',
-    ('js', 'py', 'pl', 'java', 'c', 'h', 'cpp', 'hpp', 'sql', ): 'code',
-    ('ttf', 'otf', 'fnt', ): 'font',
-    ('doc', 'rtf', 'odt', 'abw', 'docx', 'sxw', ): 'document',
-    ('xls', 'ods', 'csv', 'sdc', 'xlsx', ): 'spreadsheet',
-    ('ppt', 'odp', 'pptx', ): 'presentation', 
-    ('exe', 'msi', 'bin', 'dmg', ): 'application',
-    ('xpi', ): 'plugin',
-    ('iso', 'nrg', ): 'iso',
-}
+    file_types = {
+        ('gif', 'jpg', 'jpeg', 'png', 'bmp', 'tif', 'tiff', 'raw', 'img', 'ico', ): 'image',
+        ('avi', 'ram', 'mpg', 'mpeg', 'mov', 'asf', 'wmv', 'asx', 'ogm', 'vob', '3gp', ): 'video',
+        ('mp3', 'ogg', 'mpc', 'wav', 'wave', 'flac', 'shn', 'ape', 'mid', 'midi', 'wma', 'rm', 'aac', 'mka', ): 'music',
+        ('tar', 'bz2', 'gz', 'arj', 'rar', 'zip', '7z', ): 'archive',
+        ('deb', 'rpm', 'pkg', 'jar', 'war', 'ear', ): 'package', 
+        ('pdf', ): 'pdf',
+        ('txt', ): 'txt',
+        ('html', 'htm', 'xml', 'css', 'rss', 'yaml', 'php', 'php3', 'php4', 'php5', ): 'markup',
+        ('js', 'py', 'pl', 'java', 'c', 'h', 'cpp', 'hpp', 'sql', ): 'code',
+        ('ttf', 'otf', 'fnt', ): 'font',
+        ('doc', 'rtf', 'odt', 'abw', 'docx', 'sxw', ): 'document',
+        ('xls', 'ods', 'csv', 'sdc', 'xlsx', ): 'spreadsheet',
+        ('ppt', 'odp', 'pptx', ): 'presentation', 
+        ('exe', 'msi', 'bin', 'dmg', ): 'application',
+        ('xpi', ): 'plugin',
+        ('iso', 'nrg', ): 'iso',
+    }
 
-FILES_URL = 'http://dl.dropbox.com/u/69843/dropbox-index'
+    image_base_url = 'http://dl.dropbox.com/u/69843/dropbox-index/icons/'
 
-ICONS = (
-    FILES_URL + '/icons/back.png',
-    FILES_URL + '/icons/folder.png',
-    FILES_URL + '/icons/file.png',
-    FILES_URL + '/icons/image.png',
-    FILES_URL + '/icons/video.png',
-    FILES_URL + '/icons/music.png',
-    FILES_URL + '/icons/archive.png',
-    FILES_URL + '/icons/package.png',
-    FILES_URL + '/icons/pdf.png',
-    FILES_URL + '/icons/txt.png',
-    FILES_URL + '/icons/markup.png',
-    FILES_URL + '/icons/code.png',
-    FILES_URL + '/icons/font.png',
-    FILES_URL + '/icons/document.png',
-    FILES_URL + '/icons/spreadsheet.png',
-    FILES_URL + '/icons/presentation.png',
-    FILES_URL + '/icons/application.png',
-    FILES_URL + '/icons/plugin.png',
-    FILES_URL + '/icons/iso.png',
-)
+    page_template = Template('''
+        <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+        <html>
+            <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                <meta name="robots" content="${robots}">
+                <title>${title}</title>
+                <link rel="shortcut icon" href="${base_url}favicon.ico"/>
+                <style>
+                    body { font-family: Verdana, sans-serif; font-size: 12px;}
+                    a { text-decoration: none; color: #00A; }
+                    a:hover { text-decoration: underline; }
+                    #dropbox-index-header { padding: 0; margin: 0.5em auto 0.5em 1em; }
+                    table#dropbox-index-list { text-align: center; margin: 0 auto 0 1.5em; border-collapse: collapse; }
+                    #dropbox-index-list thead { border-bottom: 1px solid #555; }
+                    #dropbox-index-list th:hover { cursor: pointer; cursor: hand; background-color: #EEE; }
+                    #direction { border: 0; vertical-align: bottom; margin: 0 0.5em;}
+                    #dropbox-index-list tbody { border-bottom: 1px solid #555;}
+                    #dropbox-index-list tr, th { line-height: 1.7em; min-height: 25px; }
+                    #dropbox-index-list tbody tr:hover { background-color: #EEE; }
+                    .name { text-align: left; width: 35em; }
+                    .name a, thead .name { padding-left: 22px; }
+                    .name a { display: block; }
+                    .size { text-align: right; width: 7em; padding-right: 1em;}
+                    .date { text-align: right; width: 15em; padding-right: 1em;}
+                    #dropbox-index-dir-info { margin: 1em auto 0.5em 2em; }
+                    #dropbox-index-footer { margin: 1em auto 0.5em 2em; font-size: smaller;}
+                    /* Icons */
+                    .dir, .back, .file { background-repeat: no-repeat; background-position: 2px 4px;}
+                    .back { background-image: url('${base_url}back.png'); }
+                    .dir { background-image: url('${base_url}dir.png'); }
+                    .file { background-image: url('${base_url}file.png'); }
+                    .image { background-image: url('${base_url}image.png'); }
+                    .video { background-image: url('${base_url}video.png'); }
+                    .music { background-image: url('${base_url}music.png'); }
+                    .archive { background-image: url('${base_url}archive.png'); }
+                    .package { background-image: url('${base_url}package.png'); }
+                    .pdf { background-image: url('${base_url}pdf.png'); }
+                    .txt { background-image: url('${base_url}txt.png'); }
+                    .markup { background-image: url('${base_url}markup.png'); }
+                    .code { background-image: url('${base_url}code.png'); }
+                    .font { background-image: url('${base_url}font.png'); }
+                    .document { background-image: url('${base_url}document.png'); }
+                    .spreadsheet { background-image: url('${base_url}spreadsheet.png'); }
+                    .presentation { background-image: url('${base_url}presentation.png'); }
+                    .application { background-image: url('${base_url}application.png'); }
+                    .plugin { background-image: url('${base_url}plugin.png'); }
+                    .iso { background-image: url('${base_url}iso.png'); }
+                </style><script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+                <script>
+                    function sort() {
+                        column = $(this).attr("class").split(' ')[0];
+                        $("#direction").remove();
+                        if ($(this).hasClass("desc")) {
+                            $("#dropbox-index-list thead tr th").each(function(i) { $(this).removeClass("asc").removeClass("desc") });
+                            $(this).addClass("asc");
+                            reverse = -1;
+                        } else {
+                            $("#dropbox-index-list thead tr th").each(function(i) { $(this).removeClass("asc").removeClass("desc") });
+                            $(this).addClass("desc");
+                            reverse = 1;
+                        }
+                        if (column == "name") {
+                            $(this).append('<img src="${base_url}'+((reverse == 1) ? 'desc' : 'asc')+'.png" id="direction" />');
+                        } else {
+                            $(this).prepend('<img src="${base_url}'+((reverse == 1) ? 'desc' : 'asc')+'.png" id="direction" />');
+                        }
+                        rows = $("#dropbox-index-list tbody tr").detach()
+                        rows.sort(function(a, b) {
+                            result = $(a).data('type') - $(b).data('type')
+                            if (result != 0) { return result }
+                            
+                            return (($(a).data(column) < $(b).data(column)) - ($(a).data(column) > $(b).data(column))) * reverse
+                            
+                        });
+                        $("#dropbox-index-list tbody").append(rows);
+                    }
+                    
+                    function prepare() {
+                        $("#dropbox-index-list tbody tr").each(function(i) {
+                            if ($(this).children(".name").hasClass("back")) {
+                                $(this).data('type', 1);
+                            } else if ($(this).children(".name").hasClass("dir")) {
+                                $(this).data('type', 2);
+                            } else {
+                                $(this).data('type', 3);
+                            }
+                            $(this).data('name', $(this).children(".name").text().toLowerCase());
+                            $(this).data('size', parseInt($(this).children(".size").attr("sort")));
+                            $(this).data('date', parseInt($(this).children(".date").attr("sort")));
+                        });
+                        
+                        $("#dropbox-index-list thead tr th").each(function(i) {
+                            $(this).bind('click', sort);
+                        });
+                    }
 
-HTML_STYLE = '''
-    <style>
-        body { font-family: Verdana, sans-serif; font-size: 12px;}
-        a { text-decoration: none; color: #00A; }
-        a:hover { text-decoration: underline; }
-        #dropbox-index-header { padding: 0; margin: 0.5em auto 0.5em 1em; }
-        table#dropbox-index-list { text-align: center; margin: 0 auto 0 1.5em; border-collapse: collapse; }
-        #dropbox-index-list thead { border-bottom: 1px solid #555; }
-        #dropbox-index-list th:hover { cursor: pointer; cursor: hand; background-color: #EEE; }
-        #direction { border: 0; vertical-align: bottom; margin: 0 0.5em;}
-        #dropbox-index-list tbody { border-bottom: 1px solid #555;}
-        #dropbox-index-list tr, th { line-height: 1.7em; min-height: 25px; }
-        #dropbox-index-list tbody tr:hover { background-color: #EEE; }
-        .name { text-align: left; width: 35em; }
-        .name a, thead .name { padding-left: 22px; }
-        .name a { display: block; }
-        .size { text-align: right; width: 7em; padding-right: 1em;}
-        .date { text-align: right; width: 15em; padding-right: 1em;}
-        #dropbox-index-dir-info { margin: 1em auto 0.5em 2em; }
-        #dropbox-index-footer { margin: 1em auto 0.5em 2em; font-size: smaller;}
-        /* Icons */
-        .dir, .back, .file { background-repeat: no-repeat; background-position: 2px 4px;}
-        .back { background-image: url('%s'); }
-        .dir { background-image: url('%s'); }
-        .file { background-image: url('%s'); }
-        .image { background-image: url('%s'); }
-        .video { background-image: url('%s'); }
-        .music { background-image: url('%s'); }
-        .archive { background-image: url('%s'); }
-        .package { background-image: url('%s'); }
-        .pdf { background-image: url('%s'); }
-        .txt { background-image: url('%s'); }
-        .markup { background-image: url('%s'); }
-        .code { background-image: url('%s'); }
-        .font { background-image: url('%s'); }
-        .document { background-image: url('%s'); }
-        .spreadsheet { background-image: url('%s'); }
-        .presentation { background-image: url('%s'); }
-        .application { background-image: url('%s'); }
-        .plugin { background-image: url('%s'); }
-        .iso { background-image: url('%s'); }
-    </style>
-''' % ICONS
+                    $(document).ready(function(){
+                        prepare();
+                    });
+                </script>
+            </head>
+            <body>
+                <h1 id="dropbox-index-header">${title}</h1>
+                <table id="dropbox-index-list">
+                    <thead>
+                        <tr>
+                            <th class="name">Name</th>
+                            <th class="size">Size</th>
+                            <th class="date">Last Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${table_content}
+                    </tbody>
+                </table>
+                <div id="dropbox-index-footer">
+                    Generated on <strong>${generation_date}</strong>
+                </div>
+            </body>
+        </html>
+    ''')
 
-HTML_JAVASCRIPT = '''
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-    <script>
-        function sort() {
-            column = $(this).attr("class").split(' ')[0];
-            $("#direction").remove();
-            if ($(this).hasClass("desc")) {
-                $("#dropbox-index-list thead tr th").each(function(i) { $(this).removeClass("asc").removeClass("desc") });
-                $(this).addClass("asc");
-                reverse = -1;
-            } else {
-                $("#dropbox-index-list thead tr th").each(function(i) { $(this).removeClass("asc").removeClass("desc") });
-                $(this).addClass("desc");
-                reverse = 1;
-            }
-            if (column == "name") {
-                $(this).append('<img src="%s/icons/'+((reverse == 1) ? 'desc' : 'asc')+'.png" id="direction" />');
-            } else {
-                $(this).prepend('<img src="%s/icons/'+((reverse == 1) ? 'desc' : 'asc')+'.png" id="direction" />');
-            }
-            rows = $("#dropbox-index-list tbody tr").detach()
-            rows.sort(function(a, b) {
-                result = $(a).data('type') - $(b).data('type')
-                if (result != 0) { return result }
-                
-                return (($(a).data(column) < $(b).data(column)) - ($(a).data(column) > $(b).data(column))) * reverse
-                
-            });
-            $("#dropbox-index-list tbody").append(rows);
-        }
-        
-        function prepare() {
-            $("#dropbox-index-list tbody tr").each(function(i) {
-                if ($(this).children(".name").hasClass("back")) {
-                    $(this).data('type', 1);
-                } else if ($(this).children(".name").hasClass("dir")) {
-                    $(this).data('type', 2);
-                } else {
-                    $(this).data('type', 3);
-                }
-                $(this).data('name', $(this).children(".name").text().toLowerCase());
-                $(this).data('size', parseInt($(this).children(".size").attr("sort")));
-                $(this).data('date', parseInt($(this).children(".date").attr("sort")));
-            });
-            
-            $("#dropbox-index-list thead tr th").each(function(i) {
-                $(this).bind('click', sort);
-            });
-        }
+    back_template = '''
+        <tr>
+            <td class="name back">
+                <a href="../index.html">..</a>
+            </td>
+            <td class="size">
+                &nbsp;
+            </td>
+            <td class="date">
+                &nbsp;
+            </td>
+        </tr>
+    '''
 
-        $(document).ready(function(){
-            prepare();
-        });
-    </script>
-''' % (FILES_URL, FILES_URL)
+    dir_template = Template('''
+        <tr>
+            <td class="name dir">
+                <a href="${name}/index.html">${name}</a>
+            </td>
+            <td class="size">
+                &nbsp;
+            </td>
+            <td class="date" sort="${time_abs}">
+                ${time}
+            </td>
+        </tr>
+    ''')
 
-FAVICON = '<link rel="shortcut icon" href="%s/icons/favicon.ico"/>' % FILES_URL
+    file_template = Template('''
+        <tr>
+            <td class="name file${type}">
+                <a href="${name}">${name}</a>
+            </td>
+            <td class="size" sort="${size_abs}">
+                ${size}
+            </td>
+            <td class="date" sort="${time_abs}">
+                ${time}
+            </td>
+        </tr>
+    ''')
 
-HTML_START = '''
-    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-    <html>
-        <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/> 
-            <title>%s</title>
-            %s
-            %s
-            %s
-''' % ('%s', FAVICON, HTML_STYLE, HTML_JAVASCRIPT)
+    def from_command_line(self):
+        parser = argparse.ArgumentParser(
+            description = 'Creates an index.html file which lists the contents of the directory',
+            epilog = 'This tool will overwrite any existing index.html file(s)'
+        )
 
-HTML_NOINDEX = '<meta name="robots" content="index, nofollow">'
+        parser.add_argument(
+            '-R', '-r', '--recursive',
+            action = 'store_true',
+            default = False,
+            help = 'Include subdirectories [default: %(default)s]'
+        )
 
-HTML_HEAD_TO_BODY = '''
-    </head>
-    <body>
-'''
+        parser.add_argument(
+            '-S', '-s', '--searchable',
+            action = 'store_true',
+            default = False,
+            help = 'Allow created page to be listed by search engines [default: %(default)s]'
+        )
 
-HTML_HEADER = '<h1 id="dropbox-index-header">%s</h1>'
+        parser.add_argument(
+            'directory',
+            help = 'The directory to process [Required]'
+        )
 
-HTML_TABLE_START = '''
-    <table id="dropbox-index-list">
-        <thead>
-            <tr>
-                <th class="name">Name</th>
-                <th class="size">Size</th>
-                <th class="date">Last Modified</th>
-            </tr>
-        </thead>
-        <tbody>
-'''
+        args = parser.parse_args()
 
-HTML_TABLE_END = '''
-        </tbody>
-    </table>
-    <div id="dropbox-index-footer">
-        Generated on <strong>%s</strong>
-    </div>
-'''
+        self.build_index(args.directory, args.recursive, args.searchable)
 
-HTML_BACK = '''
-    <tr>
-        <td class="name back">
-            <a href="../index.html">..</a>
-        </td>
-        <td class="size">
-            &nbsp;
-        </td>
-        <td class="date">
-            &nbsp;
-        </td>
-    </tr>
-'''
-
-HTML_DIR = '''
-    <tr>
-        <td class="name dir">
-            <a href="%(name)s/index.html">%(name)s</a>
-        </td>
-        <td class="size">
-            &nbsp;
-        </td>
-        <td class="date" sort="%(time_sort)s">
-            %(time)s
-        </td>
-    </tr>
-'''
-
-HTML_FILE = '''
-    <tr>
-        <td class="name file%(type)s">
-            <a href="%(name)s">%(name)s</a>
-        </td>
-        <td class="size" sort="%(size_sort)s">
-            %(size)s
-        </td>
-        <td class="date" sort="%(time_sort)s">
-            %(time)s
-        </td>
-    </tr>
-'''
-
-HTML_END = '''
-        </body>
-    </html>
-'''
-
-def from_command_line():
-    parser = argparse.ArgumentParser(
-        description = 'Creates an index.html file which lists the contents of the directory',
-        epilog = 'This tool will overwrite any existing index.html file(s)'
-    )
-
-    parser.add_argument(
-        '-R', '-r', '--recursive',
-        action = 'store_true',
-        default = False,
-        help = 'Include subdirectories [default: %(default)s]'
-    )
-
-    parser.add_argument(
-        '-S', '-s', '--searchable',
-        action = 'store_true',
-        default = False,
-        help = 'Allow created page to be listed by search engines [default: %(default)s]'
-    )
-
-    parser.add_argument(
-        'directory',
-        help = 'The directory to process [Required]'
-    )
-
-    args = parser.parse_args()
-
-    build_index(args.directory, args.recursive, args.searchable)
-
-def build_index(path, recursive = False, searchable = False, parent = None):
-    if not os.path.isdir(path):
-        print('ERROR: Directory {0} does not exist'.format(path))
-        return False
-
-    contents = [os.path.join(path, file) for file in os.listdir(path) if file != 'index.html']
-    contents = [file for file in contents if not is_hidden(file)]
-
-    files = [file for file in contents if os.path.isfile(file)]
-    files.sort(key = str.lower)
-
-    if recursive:
-        dirs = [file for file in contents if os.path.isdir(file)]
-        dirs.sort(key = str.lower)
-    else:
-        dirs = []
-
-    build_html(path, parent, dirs, files, searchable)
-
-    print('Created index.html for ' + os.path.realpath(path))
-
-    for dir in dirs:
-        build_index(dir, recursive, searchable, path)
-
-    return True
-
-def is_hidden(filepath):
-    filename = os.path.basename(os.path.abspath(filepath))
-    return filename.startswith('.') or has_hidden_attribute(filepath)
-
-def has_hidden_attribute(filepath):
-    try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(filepath)
-        if attrs == -1:
+    def build_index(self, path, recursive = False, searchable = False, parent = None):
+        if not os.path.isdir(path):
+            print('ERROR: Directory {0} does not exist'.format(path))
             return False
 
-        return bool(attrs & 2)
+        contents = [os.path.join(path, file) for file in os.listdir(path) if file != 'index.html']
+        contents = [file for file in contents if not self.is_hidden(file)]
 
-    except (AttributeError):
-        return False
+        files = [file for file in contents if os.path.isfile(file)]
+        files.sort(key = str.lower)
 
-def build_html(path, parent, dirs, files, searchable):
-    here = os.path.basename(os.path.realpath(path))
-    index_file = open(os.path.join(path, 'index.html'), 'w')
+        if recursive:
+            dirs = [file for file in contents if os.path.isdir(file)]
+            dirs.sort(key = str.lower)
+        else:
+            dirs = []
 
-    index_file.write(HTML_START % here)
-    if not searchable:
-        index_file.write(HTML_NOINDEX)
+        index_file = open(os.path.join(path, 'index.html'), 'w')
+        index_file.write(self.build_html(path, parent, dirs, files, searchable))
+        index_file.close()
 
-    index_file.write(HTML_HEAD_TO_BODY)
+        print('Created index.html for ' + os.path.realpath(path))
 
-    index_file.write(HTML_HEADER % here)
+        for dir in dirs:
+            self.build_index(dir, recursive, searchable, path)
 
-    index_file.write(HTML_TABLE_START)
+        return True
 
-    if parent:
-        index_file.write(HTML_BACK)
+    def is_hidden(self, filepath):
+        filename = os.path.basename(os.path.abspath(filepath))
+        return filename.startswith('.') or self.has_hidden_attribute(filepath)
 
-    for dir in dirs:
-        dir_info = {}
-        dir_info['name'] = os.path.basename(dir)
-        dir_info['time'] = time.strftime(DATE_FORMAT, time.localtime(os.path.getmtime(dir)))
-        dir_info['time_sort'] = os.path.getmtime(dir)
-        index_file.write(HTML_DIR % dir_info)
+    def has_hidden_attribute(self, filepath):
+        try:
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(filepath)
+            if attrs == -1:
+                return False
 
-    for file in files:
-        file_info = {}
-        file_info['name'] = os.path.basename(file)
-        file_info['type'] = get_filetype(os.path.basename(file))
-        file_info['size'] = get_size(file)
-        file_info['size_sort'] = os.path.getsize(file)
-        file_info['time'] = time.strftime(DATE_FORMAT, time.localtime(os.path.getmtime(file)))
-        file_info['time_sort'] = os.path.getmtime(file)
-        index_file.write(HTML_FILE % file_info)
+            return bool(attrs & 2)
 
-    index_file.write(HTML_TABLE_END % time.strftime(DATE_FORMAT, time.localtime()))
-    index_file.write(HTML_END)
+        except (AttributeError):
+            return False
 
-def get_filetype(file_name):
-    ext = file_name.rsplit('.', 1)[-1].lower()
-    for keys, value in FILE_TYPES.items():
-        if ext in keys:
-            return ' ' + value
+    def build_html(self, path, parent, dirs, files, searchable):
+        table_content = ''
 
-    return ''
+        if parent:
+            table_content += self.back_template
 
-def get_size(file):
-    size = os.path.getsize(file)
+        for dir in dirs:
+            table_content += self.dir_template.safe_substitute({
+                'name': os.path.basename(dir),
+                'time': self.format_date(time.localtime(os.path.getmtime(dir))),
+                'time_abs': os.path.getmtime(dir),
+            })
 
-    if size < 1000:
-        return '%s bytes' % size
+        for file in files:
+            table_content += self.file_template.safe_substitute({
+                'name': os.path.basename(file),
+                'type': self.get_filetype(os.path.basename(file)),
+                'size': self.get_readable_size(file),
+                'size_abs': os.path.getsize(file),
+                'time': self.format_date(time.localtime(os.path.getmtime(file))),
+                'time_abs': os.path.getmtime(file),
+            })
 
-    kilo = size / 1024
-    if kilo < 1000:
-        return '%s KB' % round(kilo, 1)
+        return self.page_template.safe_substitute({
+            'base_url': self.image_base_url,
+            'robots': not searchable and 'noindex, nofollow' or '',
+            'title': os.path.basename(os.path.realpath(path)),
+            'table_content': table_content,
+            'generation_date': self.format_date(time.localtime()),
+        })
 
-    mega = kilo / 1024
-    if mega < 1000:
-        return '%s MB' % round(mega, 1)
+    def get_filetype(self, file_name):
+        ext = file_name.rsplit('.', 1)[-1].lower()
+        for keys, value in self.file_types.items():
+            if ext in keys:
+                return ' ' + value
 
-    giga = mega / 1024
-    return '%s GB' % round(giga, 1)
+        return ''
+
+    def get_readable_size(self, file):
+        size = os.path.getsize(file)
+
+        for unit in ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']:
+            if abs(size) < 1024.0:
+                return '{:3.1f} {}'.format(size, unit)
+
+            size /= 1024.0
+
+        return '{:3.1f} YB'.format(size)
 
 if __name__ == '__main__':
-    from_command_line()
+    HtmlIndex().from_command_line()
