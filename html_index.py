@@ -237,7 +237,9 @@ class HtmlIndex:
 
         parser.add_argument(
             'directory',
-            help = 'The directory to process [Required]'
+            nargs = '?',
+            default = '.',
+            help = 'The directory to process [default: %(default)s]'
         )
 
         args = parser.parse_args()
@@ -246,7 +248,7 @@ class HtmlIndex:
 
     def build_index(self, path, recursive = False, searchable = False, parent = None):
         if not os.path.isdir(path):
-            print('ERROR: Directory {0} does not exist'.format(path))
+            print('ERROR: Directory {} does not exist'.format(path))
             return False
 
         contents = [os.path.join(path, file) for file in os.listdir(path) if file != 'index.html']
