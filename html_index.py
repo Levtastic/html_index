@@ -102,7 +102,7 @@ class HtmlIndex:
                     '.plugin{background-image:url(${img_plugin});}'
                     '.iso{background-image:url(${img_iso});}'
                 '</style>'
-                '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>'
+                '<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>'
                 '<script>'
                     'function sort() {'
                         'column = $(this).attr("class").split(" ")[0];'
@@ -310,12 +310,12 @@ class HtmlIndex:
                 'time_abs': os.path.getmtime(file),
             })
 
-        return self.page_template.safe_substitute(dict(self.icons, **{
-            'robots': not searchable and 'noindex, nofollow' or '',
-            'title': os.path.basename(os.path.realpath(path)),
-            'table_content': table_content,
-            'generation_date': self.format_date(time.localtime()),
-        }))
+        return self.page_template.safe_substitute(dict(self.icons, 
+            robots = not searchable and 'noindex, nofollow' or '',
+            title = os.path.basename(os.path.realpath(path)),
+            table_content = table_content,
+            generation_date = self.format_date(time.localtime()),
+        ))
 
     def get_filetype(self, file_name):
         ext = file_name.rsplit('.', 1)[-1].lower()
