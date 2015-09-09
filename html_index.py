@@ -28,170 +28,165 @@ class HtmlIndex:
 
     image_base_url = 'http://dl.dropbox.com/u/69843/dropbox-index/icons/'
 
-    page_template = Template('''
-        <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-        <html>
-            <head>
-                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-                <meta name="robots" content="${robots}">
-                <title>${title}</title>
-                <link rel="shortcut icon" href="${base_url}favicon.ico"/>
-                <style>
-                    body { font-family: Verdana, sans-serif; font-size: 12px;}
-                    a { text-decoration: none; color: #00A; }
-                    a:hover { text-decoration: underline; }
-                    #dropbox-index-header { padding: 0; margin: 0.5em auto 0.5em 1em; }
-                    table#dropbox-index-list { text-align: center; margin: 0 auto 0 1.5em; border-collapse: collapse; }
-                    #dropbox-index-list thead { border-bottom: 1px solid #555; }
-                    #dropbox-index-list th:hover { cursor: pointer; cursor: hand; background-color: #EEE; }
-                    #direction { border: 0; vertical-align: bottom; margin: 0 0.5em;}
-                    #dropbox-index-list tbody { border-bottom: 1px solid #555;}
-                    #dropbox-index-list tr, th { line-height: 1.7em; min-height: 25px; }
-                    #dropbox-index-list tbody tr:hover { background-color: #EEE; }
-                    .name { text-align: left; width: 35em; }
-                    .name a, thead .name { padding-left: 22px; }
-                    .name a { display: block; }
-                    .size { text-align: right; width: 7em; padding-right: 1em;}
-                    .date { text-align: right; width: 15em; padding-right: 1em;}
-                    #dropbox-index-dir-info { margin: 1em auto 0.5em 2em; }
-                    #dropbox-index-footer { margin: 1em auto 0.5em 2em; font-size: smaller;}
-                    /* Icons */
-                    .dir, .back, .file { background-repeat: no-repeat; background-position: 2px 4px;}
-                    .back { background-image: url('${base_url}back.png'); }
-                    .dir { background-image: url('${base_url}dir.png'); }
-                    .file { background-image: url('${base_url}file.png'); }
-                    .image { background-image: url('${base_url}image.png'); }
-                    .video { background-image: url('${base_url}video.png'); }
-                    .music { background-image: url('${base_url}music.png'); }
-                    .archive { background-image: url('${base_url}archive.png'); }
-                    .package { background-image: url('${base_url}package.png'); }
-                    .pdf { background-image: url('${base_url}pdf.png'); }
-                    .txt { background-image: url('${base_url}txt.png'); }
-                    .markup { background-image: url('${base_url}markup.png'); }
-                    .code { background-image: url('${base_url}code.png'); }
-                    .font { background-image: url('${base_url}font.png'); }
-                    .document { background-image: url('${base_url}document.png'); }
-                    .spreadsheet { background-image: url('${base_url}spreadsheet.png'); }
-                    .presentation { background-image: url('${base_url}presentation.png'); }
-                    .application { background-image: url('${base_url}application.png'); }
-                    .plugin { background-image: url('${base_url}plugin.png'); }
-                    .iso { background-image: url('${base_url}iso.png'); }
-                </style><script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-                <script>
-                    function sort() {
-                        column = $(this).attr("class").split(' ')[0];
-                        $("#direction").remove();
-                        if ($(this).hasClass("desc")) {
-                            $("#dropbox-index-list thead tr th").each(function(i) { $(this).removeClass("asc").removeClass("desc") });
-                            $(this).addClass("asc");
-                            reverse = -1;
-                        } else {
-                            $("#dropbox-index-list thead tr th").each(function(i) { $(this).removeClass("asc").removeClass("desc") });
-                            $(this).addClass("desc");
-                            reverse = 1;
-                        }
-                        if (column == "name") {
-                            $(this).append('<img src="${base_url}'+((reverse == 1) ? 'desc' : 'asc')+'.png" id="direction" />');
-                        } else {
-                            $(this).prepend('<img src="${base_url}'+((reverse == 1) ? 'desc' : 'asc')+'.png" id="direction" />');
-                        }
-                        rows = $("#dropbox-index-list tbody tr").detach()
-                        rows.sort(function(a, b) {
-                            result = $(a).data('type') - $(b).data('type')
-                            if (result != 0) { return result }
-                            
-                            return (($(a).data(column) < $(b).data(column)) - ($(a).data(column) > $(b).data(column))) * reverse
-                            
-                        });
-                        $("#dropbox-index-list tbody").append(rows);
-                    }
-                    
-                    function prepare() {
-                        $("#dropbox-index-list tbody tr").each(function(i) {
-                            if ($(this).children(".name").hasClass("back")) {
-                                $(this).data('type', 1);
-                            } else if ($(this).children(".name").hasClass("dir")) {
-                                $(this).data('type', 2);
-                            } else {
-                                $(this).data('type', 3);
-                            }
-                            $(this).data('name', $(this).children(".name").text().toLowerCase());
-                            $(this).data('size', parseInt($(this).children(".size").attr("sort")));
-                            $(this).data('date', parseInt($(this).children(".date").attr("sort")));
-                        });
-                        
-                        $("#dropbox-index-list thead tr th").each(function(i) {
-                            $(this).bind('click', sort);
-                        });
-                    }
+    page_template = Template(
+        '<!DOCTYPE HTML>'
+        '<html>'
+            '<head>'
+                '<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>'
+                '<meta name="robots" content="${robots}">'
+                '<title>${title}</title>'
+                '<link rel="shortcut icon" href="${base_url}favicon.ico"/>'
+                '<style>'
+                    'body { font-family: Verdana, sans-serif; font-size: 12px;}'
+                    'a { text-decoration: none; color: #00A; }'
+                    'a:hover { text-decoration: underline; }'
+                    '#html-index-header { padding: 0; margin: 0.5em auto 0.5em 1em; }'
+                    'table#html-index-list { text-align: center; margin: 0 auto 0 1.5em; border-collapse: collapse; }'
+                    '#html-index-list thead { border-bottom: 1px solid #555; }'
+                    '#html-index-list th:hover { cursor: pointer; cursor: hand; background-color: #EEE; }'
+                    '#direction { border: 0; vertical-align: bottom; margin: 0 0.5em;}'
+                    '#html-index-list tbody { border-bottom: 1px solid #555;}'
+                    '#html-index-list tr, th { line-height: 1.7em; min-height: 25px; }'
+                    '#html-index-list tbody tr:hover { background-color: #EEE; }'
+                    '.name { text-align: left; width: 35em; }'
+                    '.name a, thead .name { padding-left: 22px; }'
+                    '.name a { display: block; }'
+                    '.size { text-align: right; width: 7em; padding-right: 1em;}'
+                    '.date { text-align: right; width: 15em; padding-right: 1em;}'
+                    '#html-index-dir-info { margin: 1em auto 0.5em 2em; }'
+                    '#html-index-footer { margin: 1em auto 0.5em 2em; font-size: smaller;}'
+                    '.dir, .back, .file { background-repeat: no-repeat; background-position: 2px 4px;}'
+                    '.back { background-image: url(\'${base_url}back.png\'); }'
+                    '.dir { background-image: url(\'${base_url}dir.png\'); }'
+                    '.file { background-image: url(\'${base_url}file.png\'); }'
+                    '.image { background-image: url(\'${base_url}image.png\'); }'
+                    '.video { background-image: url(\'${base_url}video.png\'); }'
+                    '.music { background-image: url(\'${base_url}music.png\'); }'
+                    '.archive { background-image: url(\'${base_url}archive.png\'); }'
+                    '.package { background-image: url(\'${base_url}package.png\'); }'
+                    '.pdf { background-image: url(\'${base_url}pdf.png\'); }'
+                    '.txt { background-image: url(\'${base_url}txt.png\'); }'
+                    '.markup { background-image: url(\'${base_url}markup.png\'); }'
+                    '.code { background-image: url(\'${base_url}code.png\'); }'
+                    '.font { background-image: url(\'${base_url}font.png\'); }'
+                    '.document { background-image: url(\'${base_url}document.png\'); }'
+                    '.spreadsheet { background-image: url(\'${base_url}spreadsheet.png\'); }'
+                    '.presentation { background-image: url(\'${base_url}presentation.png\'); }'
+                    '.application { background-image: url(\'${base_url}application.png\'); }'
+                    '.plugin { background-image: url(\'${base_url}plugin.png\'); }'
+                    '.iso { background-image: url(\'${base_url}iso.png\'); }'
+                '</style>'
+                '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>'
+                '<script>'
+                    'function sort() {'
+                        'column = $(this).attr("class").split(" ")[0];'
+                        '$("#direction").remove();'
+                        'if ($(this).hasClass("desc")) {'
+                            '$("#html-index-list thead tr th").each(function(i) { $(this).removeClass("asc").removeClass("desc") });'
+                            '$(this).addClass("asc");'
+                            'reverse = -1;'
+                        '} else {'
+                            '$("#html-index-list thead tr th").each(function(i) { $(this).removeClass("asc").removeClass("desc") });'
+                            '$(this).addClass("desc");'
+                            'reverse = 1;'
+                        '}'
+                        'if (column == "name") {'
+                            '$(this).append("<img src=\\"${base_url}"+((reverse == 1) ? "desc" : "asc")+".png\\" id=\\"direction\\" />");'
+                        '} else {'
+                            '$(this).prepend("<img src=\\"${base_url}"+((reverse == 1) ? "desc" : "asc")+".png\\" id=\\"direction\\" />");'
+                        '}'
+                        'rows = $("#html-index-list tbody tr").detach();'
+                        'rows.sort(function(a, b) {'
+                            'result = $(a).data("type") - $(b).data("type");'
+                            'if (result != 0) { return result; }'
+                            'return (($(a).data(column) < $(b).data(column)) - ($(a).data(column) > $(b).data(column))) * reverse;'
+                        '});'
+                        '$("#html-index-list tbody").append(rows);'
+                    '}'
+                    'function prepare() {'
+                        '$("#html-index-list tbody tr").each(function(i) {'
+                            'if ($(this).children(".name").hasClass("back")) {'
+                               ' $(this).data("type", 1);'
+                            '} else if ($(this).children(".name").hasClass("dir")) {'
+                                '$(this).data("type", 2);'
+                            '} else {'
+                                '$(this).data("type", 3);'
+                            '}'
+                            '$(this).data("name", $(this).children(".name").text().toLowerCase());'
+                            '$(this).data("size", parseInt($(this).children(".size").attr("sort")));'
+                            '$(this).data("date", parseInt($(this).children(".date").attr("sort")));'
+                        '});'
+                        '$("#html-index-list thead tr th").each(function(i) {'
+                            '$(this).bind("click", sort);'
+                        '});'
+                    '}'
+                    '$(document).ready(function(){'
+                        'prepare();'
+                    '});'
+                '</script>'
+            '</head>'
+            '<body>'
+                '<h1 id="html-index-header">${title}</h1>'
+                '<table id="html-index-list">'
+                    '<thead>'
+                        '<tr>'
+                            '<th class="name">Name</th>'
+                            '<th class="size">Size</th>'
+                            '<th class="date">Last Modified</th>'
+                        '</tr>'
+                    '</thead>'
+                    '<tbody>'
+                        '${table_content}'
+                    '</tbody>'
+                '</table>'
+                '<div id="html-index-footer">'
+                    'Generated on <strong>${generation_date}</strong>'
+                '</div>'
+            '</body>'
+        '</html>'
+    )
 
-                    $(document).ready(function(){
-                        prepare();
-                    });
-                </script>
-            </head>
-            <body>
-                <h1 id="dropbox-index-header">${title}</h1>
-                <table id="dropbox-index-list">
-                    <thead>
-                        <tr>
-                            <th class="name">Name</th>
-                            <th class="size">Size</th>
-                            <th class="date">Last Modified</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${table_content}
-                    </tbody>
-                </table>
-                <div id="dropbox-index-footer">
-                    Generated on <strong>${generation_date}</strong>
-                </div>
-            </body>
-        </html>
-    ''')
+    back_template = (
+        '<tr>'
+            '<td class="name back">'
+                '<a href="../index.html">..</a>'
+            '</td>'
+            '<td class="size">'
+                '&nbsp;'
+            '</td>'
+            '<td class="date">'
+                '&nbsp;'
+            '</td>'
+        '</tr>'
+    )
 
-    back_template = '''
-        <tr>
-            <td class="name back">
-                <a href="../index.html">..</a>
-            </td>
-            <td class="size">
-                &nbsp;
-            </td>
-            <td class="date">
-                &nbsp;
-            </td>
-        </tr>
-    '''
+    dir_template = Template(
+        '<tr>'
+            '<td class="name dir">'
+                '<a href="${name}/index.html">${name}</a>'
+            '</td>'
+            '<td class="size">'
+                '&nbsp;'
+            '</td>'
+            '<td class="date" sort="${time_abs}">'
+                '${time}'
+            '</td>'
+        '</tr>'
+    )
 
-    dir_template = Template('''
-        <tr>
-            <td class="name dir">
-                <a href="${name}/index.html">${name}</a>
-            </td>
-            <td class="size">
-                &nbsp;
-            </td>
-            <td class="date" sort="${time_abs}">
-                ${time}
-            </td>
-        </tr>
-    ''')
-
-    file_template = Template('''
-        <tr>
-            <td class="name file${type}">
-                <a href="${name}">${name}</a>
-            </td>
-            <td class="size" sort="${size_abs}">
-                ${size}
-            </td>
-            <td class="date" sort="${time_abs}">
-                ${time}
-            </td>
-        </tr>
-    ''')
+    file_template = Template(
+        '<tr>'
+            '<td class="name file${type}">'
+                '<a href="${name}">${name}</a>'
+            '</td>'
+            '<td class="size" sort="${size_abs}">'
+                '${size}'
+            '</td>'
+            '<td class="date" sort="${time_abs}">'
+                '${time}'
+            '</td>'
+        '</tr>'
+    )
 
     def from_command_line(self):
         parser = argparse.ArgumentParser(
