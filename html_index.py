@@ -195,7 +195,7 @@ class HtmlIndex:
                 '<a href="${name}/${index_file}">${name}</a>'
             '</td>'
             '<td class="size" sort="${size_abs}">'
-                '${size}'
+                '(${size})'
             '</td>'
             '<td class="date" sort="${time_abs}">'
                 '${time}'
