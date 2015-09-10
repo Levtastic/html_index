@@ -228,21 +228,21 @@ class HtmlIndex:
         )
 
         parser.add_argument(
-            '-R', '-r', '--recursive',
+            '-r', '--recursive',
             action = 'store_true',
             default = False,
             help = 'Include subdirectories [default: %(default)s]'
         )
 
         parser.add_argument(
-            '-S', '-s', '--searchable',
+            '-s', '--searchable',
             action = 'store_true',
             default = False,
             help = 'Allow created page to be listed by search engines [default: %(default)s]'
         )
 
         parser.add_argument(
-            '-F', '-f', '--filename',
+            '-f', '--filename',
             default = 'index.html',
             help = 'Sets the name of the created html file in each directory [default: %(default)s]'
         )
