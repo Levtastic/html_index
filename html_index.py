@@ -11,23 +11,25 @@ from string import Template
 class HtmlIndex:
     format_date = lambda self, date: time.strftime('%Y-%m-%d %H:%M:%S', date)
 
-    file_types = {
-        ('gif', 'jpg', 'jpeg', 'png', 'bmp', 'tif', 'tiff', 'raw', 'img', 'ico', ): 'image',
-        ('avi', 'ram', 'mpg', 'mpeg', 'mov', 'asf', 'wmv', 'asx', 'ogm', 'vob', '3gp', ): 'video',
-        ('mp3', 'ogg', 'mpc', 'wav', 'wave', 'flac', 'shn', 'ape', 'mid', 'midi', 'wma', 'rm', 'aac', 'mka', ): 'music',
-        ('tar', 'bz2', 'gz', 'arj', 'rar', 'zip', '7z', ): 'archive',
-        ('deb', 'rpm', 'pkg', 'jar', 'war', 'ear', ): 'package', 
-        ('pdf', ): 'pdf',
-        ('txt', ): 'txt',
-        ('html', 'htm', 'xml', 'css', 'rss', 'yaml', 'php', 'php3', 'php4', 'php5', ): 'markup',
-        ('js', 'py', 'pl', 'java', 'c', 'h', 'cpp', 'hpp', 'sql', ): 'code',
-        ('ttf', 'otf', 'fnt', ): 'font',
-        ('doc', 'rtf', 'odt', 'abw', 'docx', 'sxw', ): 'document',
-        ('xls', 'ods', 'csv', 'sdc', 'xlsx', ): 'spreadsheet',
-        ('ppt', 'odp', 'pptx', ): 'presentation', 
-        ('exe', 'msi', 'bin', 'dmg', ): 'application',
-        ('xpi', ): 'plugin',
-        ('iso', 'nrg', ): 'iso',
+    file_types = {} # holds an inverted version of file_extensions
+
+    file_extensions = {
+        'image':        ('gif', 'jpg', 'jpeg', 'png', 'bmp', 'tif', 'tiff', 'raw', 'img', 'ico'),
+        'video':        ('avi', 'ram', 'mpg', 'mpeg', 'mov', 'asf', 'wmv', 'asx', 'ogm', 'vob', '3gp'),
+        'music':        ('mp3', 'ogg', 'mpc', 'wav', 'wave', 'flac', 'shn', 'ape', 'mid', 'midi', 'wma', 'rm', 'aac', 'mka'),
+        'archive':      ('tar', 'bz2', 'gz', 'arj', 'rar', 'zip', '7z'),
+        'package':      ('deb', 'rpm', 'pkg', 'jar', 'war', 'ear'), 
+        'pdf':          ('pdf', ),
+        'txt':          ('txt', ),
+        'markup':       ('html', 'htm', 'xml', 'css', 'rss', 'yaml', 'php', 'php3', 'php4', 'php5'),
+        'code':         ('js', 'py', 'pl', 'java', 'c', 'h', 'cpp', 'hpp', 'sql'),
+        'font':         ('ttf', 'otf', 'fnt'),
+        'document':     ('doc', 'rtf', 'odt', 'abw', 'docx', 'sxw'),
+        'spreadsheet':  ('xls', 'ods', 'csv', 'sdc', 'xlsx'),
+        'presentation': ('ppt', 'odp', 'pptx'), 
+        'application':  ('exe', 'msi', 'bin', 'dmg'),
+        'plugin':       ('xpi', ),
+        'iso':          ('iso', 'nrg'),
     }
 
     icons = {
@@ -203,7 +205,7 @@ class HtmlIndex:
 
     file_template = Template(
         '<tr>'
-            '<td class="name file${type}">'
+            '<td class="name file ${type}">'
                 '<a href="${name}">${name}</a>'
             '</td>'
             '<td class="size" sort="${size_abs}">'
@@ -214,6 +216,10 @@ class HtmlIndex:
             '</td>'
         '</tr>'
     )
+
+    def __init__(self):
+        for type, extensions in self.file_extensions.items():
+            self.file_types.update(dict.fromkeys(extensions, type))
 
     def from_command_line(self):
         parser = argparse.ArgumentParser(
@@ -320,12 +326,8 @@ class HtmlIndex:
         ))
 
     def get_filetype(self, file_name):
-        ext = file_name.rsplit('.', 1)[-1].lower()
-        for keys, value in self.file_types.items():
-            if ext in keys:
-                return ' ' + value
-
-        return ''
+        extension = file_name.rsplit('.', 1)[-1].lower()
+        return self.file_types.get(extension, '')
 
     def get_readable_size(self, file):
         size = os.path.getsize(file)
