@@ -22,7 +22,7 @@ class HtmlIndex:
         'pdf':          ('pdf', ),
         'txt':          ('txt', ),
         'markup':       ('html', 'htm', 'xml', 'css', 'rss', 'yaml', 'php', 'php3', 'php4', 'php5', 'ini'),
-        'code':         ('js', 'py', 'pl', 'java', 'c', 'h', 'cpp', 'hpp', 'sql', 'bat', 'sh'),
+        'code':         ('js', 'py', 'pl', 'java', 'c', 'h', 'cpp', 'hpp', 'sql', 'bat', 'sh', 'mrc'),
         'font':         ('ttf', 'otf', 'fnt'),
         'document':     ('doc', 'rtf', 'odt', 'abw', 'docx', 'sxw'),
         'spreadsheet':  ('xls', 'ods', 'csv', 'sdc', 'xlsx'),
