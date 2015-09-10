@@ -302,28 +302,29 @@ class HtmlIndex:
             table_content += self.back_template
 
         for dir in dirs:
-            table_content += self.dir_template.safe_substitute({
-                'name': os.path.basename(dir),
-                'time': self.format_date(time.localtime(os.path.getmtime(dir))),
-                'time_abs': os.path.getmtime(dir),
-            })
+            table_content += self.dir_template.safe_substitute(
+                name = os.path.basename(dir),
+                time = self.format_date(time.localtime(os.path.getmtime(dir))),
+                time_abs = os.path.getmtime(dir),
+            )
 
         for file in files:
-            table_content += self.file_template.safe_substitute({
-                'name': os.path.basename(file),
-                'type': self.get_filetype(os.path.basename(file)),
-                'size': self.get_readable_size(file),
-                'size_abs': os.path.getsize(file),
-                'time': self.format_date(time.localtime(os.path.getmtime(file))),
-                'time_abs': os.path.getmtime(file),
-            })
+            table_content += self.file_template.safe_substitute(
+                name = os.path.basename(file),
+                type = self.get_filetype(os.path.basename(file)),
+                size = self.get_readable_size(file),
+                size_abs = os.path.getsize(file),
+                time = self.format_date(time.localtime(os.path.getmtime(file))),
+                time_abs = os.path.getmtime(file),
+            )
 
-        return self.page_template.safe_substitute(dict(self.icons, 
+        return self.page_template.safe_substitute(
+            self.icons, 
             robots = not searchable and 'noindex, nofollow' or '',
             title = os.path.basename(os.path.realpath(path)),
             table_content = table_content,
             generation_date = self.format_date(time.localtime()),
-        ))
+        )
 
     def get_filetype(self, file_name):
         extension = file_name.rsplit('.', 1)[-1].lower()
