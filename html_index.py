@@ -194,8 +194,8 @@ class HtmlIndex:
             '<td class="name dir">'
                 '<a href="${name}/${index_file}">${name}</a>'
             '</td>'
-            '<td class="size">'
-                '&nbsp;'
+            '<td class="size" sort="${size_abs}">'
+                '${size}'
             '</td>'
             '<td class="date" sort="${time_abs}">'
                 '${time}'
@@ -310,19 +310,24 @@ class HtmlIndex:
             )
 
         for dir in dirs:
+            dir_size = self.get_dir_size(dir)
+
             table_content += self.dir_template.safe_substitute(
                 index_file = filename,
                 name = os.path.basename(dir),
+                size = self.get_readable_size(dir_size),
+                size_abs = dir_size,
                 time = self.format_date(time.localtime(os.path.getmtime(dir))),
                 time_abs = os.path.getmtime(dir),
             )
 
         for file in files:
+            file_size = os.path.getsize(file)
             table_content += self.file_template.safe_substitute(
                 name = os.path.basename(file),
                 type = self.get_filetype(os.path.basename(file)),
-                size = self.get_readable_size(file),
-                size_abs = os.path.getsize(file),
+                size = self.get_readable_size(file_size),
+                size_abs = file_size,
                 time = self.format_date(time.localtime(os.path.getmtime(file))),
                 time_abs = os.path.getmtime(file),
             )
@@ -335,13 +340,16 @@ class HtmlIndex:
             generation_date = self.format_date(time.localtime()),
         )
 
-    def get_filetype(self, file_name):
-        extension = file_name.rsplit('.', 1)[-1].lower()
-        return self.file_types.get(extension, '')
+    def get_dir_size(self, dir):
+        size = 0
+        for path, dirs, files in os.walk(dir):
+            for file in files:
+                file_path = os.path.join(path, file)
+                size += os.path.getsize(file_path)
 
-    def get_readable_size(self, file):
-        size = os.path.getsize(file)
+        return size
 
+    def get_readable_size(self, size):
         for unit in ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']:
             if abs(size) < 1024.0:
                 return '{:3.1f} {}'.format(size, unit)
@@ -349,6 +357,10 @@ class HtmlIndex:
             size /= 1024.0
 
         return '{:3.1f} YB'.format(size)
+
+    def get_filetype(self, file_name):
+        extension = file_name.rsplit('.', 1)[-1].lower()
+        return self.file_types.get(extension, '')
 
 if __name__ == '__main__':
     HtmlIndex().from_command_line()
