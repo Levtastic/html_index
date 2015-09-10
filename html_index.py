@@ -1,4 +1,4 @@
-# Derived from the dropbox-index project found here:
+# Originally based on the dropbox-index project found here:
 # http://code.google.com/p/kosciak-misc/wiki/DropboxIndex
 #
 # Uses icons from famfamfam's "Silk" icon set:
