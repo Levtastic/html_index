@@ -119,7 +119,7 @@ class HtmlIndex:
                             '$(this).addClass("desc");'
                             'reverse = 1;'
                         '}'
-                        'var sort_img = "<img src=\\""+(reverse == 1 ? "${img_desc}" : "${img_asc}")+"\\" id=\\"direction\\" />";'
+                        '''var sort_img = '<img src="'+(reverse == 1 ? '${img_desc}' : '${img_asc}')+'" id="direction" />';'''
                         'if (column == "name") {'
                             '$(this).append(sort_img);'
                         '} else {'
