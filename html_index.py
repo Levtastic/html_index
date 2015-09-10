@@ -312,7 +312,6 @@ class HtmlIndex:
 
         for dir in dirs:
             dir_size = self.get_dir_size(dir)
-
             table_content += self.dir_template.safe_substitute(
                 index_file = filename,
                 name = os.path.basename(dir),
