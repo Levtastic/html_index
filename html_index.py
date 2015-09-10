@@ -21,8 +21,8 @@ class HtmlIndex:
         'package':      ('deb', 'rpm', 'pkg', 'jar', 'war', 'ear'), 
         'pdf':          ('pdf', ),
         'txt':          ('txt', ),
-        'markup':       ('html', 'htm', 'xml', 'css', 'rss', 'yaml', 'php', 'php3', 'php4', 'php5'),
-        'code':         ('js', 'py', 'pl', 'java', 'c', 'h', 'cpp', 'hpp', 'sql'),
+        'markup':       ('html', 'htm', 'xml', 'css', 'rss', 'yaml', 'php', 'php3', 'php4', 'php5', 'ini'),
+        'code':         ('js', 'py', 'pl', 'java', 'c', 'h', 'cpp', 'hpp', 'sql', 'bat', 'sh'),
         'font':         ('ttf', 'otf', 'fnt'),
         'document':     ('doc', 'rtf', 'odt', 'abw', 'docx', 'sxw'),
         'spreadsheet':  ('xls', 'ods', 'csv', 'sdc', 'xlsx'),
@@ -175,10 +175,10 @@ class HtmlIndex:
         '</html>'
     )
 
-    back_template = (
+    back_template = Template(
         '<tr>'
             '<td class="name back">'
-                '<a href="../index.html">..</a>'
+                '<a href="../${index_file}">..</a>'
             '</td>'
             '<td class="size">'
                 '&nbsp;'
@@ -192,7 +192,7 @@ class HtmlIndex:
     dir_template = Template(
         '<tr>'
             '<td class="name dir">'
-                '<a href="${name}/index.html">${name}</a>'
+                '<a href="${name}/${index_file}">${name}</a>'
             '</td>'
             '<td class="size">'
                 '&nbsp;'
@@ -242,6 +242,12 @@ class HtmlIndex:
         )
 
         parser.add_argument(
+            '-F', '-f', '--filename',
+            default = 'index.html',
+            help = 'Sets the name of the created html file in each directory [default: %(default)s]'
+        )
+
+        parser.add_argument(
             'directory',
             nargs = '?',
             default = '.',
@@ -250,14 +256,14 @@ class HtmlIndex:
 
         args = parser.parse_args()
 
-        self.build_index(args.directory, args.recursive, args.searchable)
+        self.build_index(args.directory, args.filename, args.recursive, args.searchable)
 
-    def build_index(self, path, recursive = False, searchable = False, parent = None):
+    def build_index(self, path, filename = 'index.html', recursive = False, searchable = False, parent = None):
         if not os.path.isdir(path):
             print('ERROR: Directory {} does not exist'.format(path))
             return False
 
-        contents = [os.path.join(path, file) for file in os.listdir(path) if file != 'index.html']
+        contents = [os.path.join(path, file) for file in os.listdir(path) if file != filename]
         contents = [file for file in contents if not self.is_hidden(file)]
 
         files = [file for file in contents if os.path.isfile(file)]
@@ -269,14 +275,14 @@ class HtmlIndex:
         else:
             dirs = []
 
-        index_file = open(os.path.join(path, 'index.html'), 'w')
-        index_file.write(self.build_html(path, parent, dirs, files, searchable))
+        index_file = open(os.path.join(path, filename), 'w')
+        index_file.write(self.build_html(path, parent, filename, dirs, files, searchable))
         index_file.close()
 
-        print('Created index.html for ' + os.path.realpath(path))
+        print('Created {} for {}'.format(filename, os.path.realpath(path)))
 
         for dir in dirs:
-            self.build_index(dir, recursive, searchable, path)
+            self.build_index(dir, filename, recursive, searchable, path)
 
         return True
 
@@ -295,14 +301,17 @@ class HtmlIndex:
         except (AttributeError):
             return False
 
-    def build_html(self, path, parent, dirs, files, searchable):
+    def build_html(self, path, parent, filename, dirs, files, searchable):
         table_content = ''
 
         if parent:
-            table_content += self.back_template
+            table_content += self.back_template.safe_substitute(
+                index_file = filename,
+            )
 
         for dir in dirs:
             table_content += self.dir_template.safe_substitute(
+                index_file = filename,
                 name = os.path.basename(dir),
                 time = self.format_date(time.localtime(os.path.getmtime(dir))),
                 time_abs = os.path.getmtime(dir),
