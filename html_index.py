@@ -219,6 +219,9 @@ class HtmlIndex:
     )
 
     def __init__(self):
+        self.update_file_types()
+
+    def update_file_types(self):
         for type, extensions in self.file_extensions.items():
             self.file_types.update(dict.fromkeys(extensions, type))
 
