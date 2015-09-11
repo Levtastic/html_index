@@ -222,43 +222,6 @@ class HtmlIndex:
         for type, extensions in self.file_extensions.items():
             self.file_types.update(dict.fromkeys(extensions, type))
 
-    def from_command_line(self):
-        parser = argparse.ArgumentParser(
-            description = 'Creates an index.html file which lists the contents of the directory',
-            epilog = 'This tool will overwrite any existing index.html file(s)'
-        )
-
-        parser.add_argument(
-            '-r', '--recursive',
-            action = 'store_true',
-            default = False,
-            help = 'Include subdirectories [default: %(default)s]'
-        )
-
-        parser.add_argument(
-            '-s', '--searchable',
-            action = 'store_true',
-            default = False,
-            help = 'Allow created page to be listed by search engines [default: %(default)s]'
-        )
-
-        parser.add_argument(
-            '-f', '--filename',
-            default = 'index.html',
-            help = 'Sets the name of the created html file in each directory [default: %(default)s]'
-        )
-
-        parser.add_argument(
-            'directory',
-            nargs = '?',
-            default = '.',
-            help = 'The directory to process [default: %(default)s]'
-        )
-
-        args = parser.parse_args()
-
-        self.build_index(args.directory, args.filename, args.recursive, args.searchable)
-
     def build_index(self, path, filename = 'index.html', recursive = False, searchable = False, parent = None):
         if not os.path.isdir(path):
             print('ERROR: Directory {} does not exist'.format(path))
@@ -364,5 +327,42 @@ class HtmlIndex:
         extension = file_name.rsplit('.', 1)[-1].lower()
         return self.file_types.get(extension, '')
 
+def from_command_line():
+    parser = argparse.ArgumentParser(
+        description = 'Creates an index.html file which lists the contents of the directory',
+        epilog = 'This tool will overwrite any existing index.html file(s)'
+    )
+
+    parser.add_argument(
+        '-r', '--recursive',
+        action = 'store_true',
+        default = False,
+        help = 'Include subdirectories [default: %(default)s]'
+    )
+
+    parser.add_argument(
+        '-s', '--searchable',
+        action = 'store_true',
+        default = False,
+        help = 'Allow created page to be listed by search engines [default: %(default)s]'
+    )
+
+    parser.add_argument(
+        '-f', '--filename',
+        default = 'index.html',
+        help = 'Sets the name of the created html file in each directory [default: %(default)s]'
+    )
+
+    parser.add_argument(
+        'directory',
+        nargs = '?',
+        default = '.',
+        help = 'The directory to process [default: %(default)s]'
+    )
+
+    args = parser.parse_args()
+
+    HtmlIndex().build_index(args.directory, args.filename, args.recursive, args.searchable)
+
 if __name__ == '__main__':
-    HtmlIndex().from_command_line()
+    from_command_line()
