@@ -244,9 +244,8 @@ class HtmlIndex:
 
         html = self.build_html(path, parent, filename, dirs, files, searchable)
 
-        index_file = open(os.path.join(path, filename), 'w')
-        index_file.write(html)
-        index_file.close()
+        with open(os.path.join(path, filename), 'w') as file:
+            file.write(html)
 
         print('Created {} for {}'.format(filename, os.path.realpath(path)))
 
