@@ -266,7 +266,7 @@ class HtmlIndex:
 
             return bool(attrs & 2)
 
-        except (AttributeError):
+        except AttributeError:
             return False
 
     def build_html(self, path, parent, filename, dirs, files, searchable):
