@@ -310,7 +310,7 @@ class HtmlIndex:
 
     def get_dir_size(self, dir):
         size = 0
-        for path, dirs, files in os.walk(dir):
+        for path, dirs, files in os.walk(dir, followlinks = True):
             for file in files:
                 file_path = os.path.join(path, file)
                 size += os.path.getsize(file_path)
